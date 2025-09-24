@@ -120,6 +120,10 @@ fn main() {
     let mut state = State::default();
     state.running = true;
     while state.running {
-        event_queue.blocking_dispatch(&mut state).unwrap();
+        if let Some(guard) = event_queue.prepare_read() {
+            let _ = guard.read();
+        } else {
+            event_queue.dispatch_pending(&mut state).unwrap();
+        }
     }
 }
